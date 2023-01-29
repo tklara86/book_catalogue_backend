@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -50,7 +51,11 @@ func (b *BookModel) Insert(book *Book) (int, error) {
   `
 	args := []any{book.Title, book.Status, book.StatusID}
 
-	result, err := b.DB.Exec(query, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := b.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -66,7 +71,11 @@ func (b *BookModel) Insert(book *Book) (int, error) {
 func (b *BookModel) GetBooks() ([]*Book, error) {
 	query := `SELECT * FROM cg_books`
 
-	results, err := b.DB.Query(query)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	results, err := b.DB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -96,7 +105,11 @@ func (b *BookModel) DeleteBook(id int64) error {
 	}
 	query := `DELETE FROM cg_books WHERE id = ?`
 
-	result, err := b.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := b.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -122,7 +135,11 @@ func (b *BookModel) GetBook(id int64) (*Book, error) {
 
 	var book Book
 
-	err := b.DB.QueryRow(query, id).Scan(&book.ID, &book.Title, &book.StatusName, &book.StatusID, &book.CreatedAt, &book.UpdatedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := b.DB.QueryRowContext(ctx, query, id).Scan(&book.ID, &book.Title, &book.StatusName, &book.StatusID, &book.CreatedAt, &book.UpdatedAt)
 
 	if err != nil {
 		switch {
@@ -140,7 +157,11 @@ func (b *BookModel) GetBook(id int64) (*Book, error) {
 func (b *BookModel) UpdateBook(book *Book) error {
 	query := `UPDATE cg_books SET title = ?, status = ?, status_id = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?`
 
-	_, err := b.DB.Exec(query, book.Title, book.Status, book.StatusID, book.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	_, err := b.DB.ExecContext(ctx, query, book.Title, book.Status, book.StatusID, book.ID)
 	if err != nil {
 		return err
 	}

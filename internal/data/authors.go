@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -36,7 +37,11 @@ func (a *AuthorModel) Insert(author *Author) (int, error) {
 
 	args := []any{author.FirstName, author.LastName, author.Description}
 
-	result, err := a.DB.Exec(query, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := a.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -54,6 +59,10 @@ func (a *AuthorModel) InsertBookAuthors(ba []BookAuthor) (int, error) {
 
 	args := []any{}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
 	for _, v := range ba {
 		args = append(args, v.BookId, v.AuthorId)
 		numFields := 1
@@ -65,7 +74,7 @@ func (a *AuthorModel) InsertBookAuthors(ba []BookAuthor) (int, error) {
 	}
 	query = query[:len(query)-1]
 
-	result, err := a.DB.Exec(query, args...)
+	result, err := a.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -82,7 +91,11 @@ func (a *AuthorModel) InsertBookAuthors(ba []BookAuthor) (int, error) {
 func (a *AuthorModel) GetAuthors() ([]*Author, error) {
 	query := `SELECT id, CONCAT(first_name, ' ' ,last_name) as author_name, first_name, last_name, description, created_at, updated_at FROM cg_authors`
 
-	rows, err := a.DB.Query(query)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	rows, err := a.DB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +124,11 @@ func (a *AuthorModel) GetBookAuthors(id int64) ([]*Author, error) {
 						LEFT JOIN cg_book_authors bk  ON bk.author_id = a.id
 						WHERE bk.book_id = ?`
 
-	results, err := a.DB.Query(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	results, err := a.DB.QueryContext(ctx, query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +157,11 @@ func (a *AuthorModel) DeleteAuthor(id int64) error {
 	}
 	query := `DELETE FROM cg_authors WHERE id = ?`
 
-	result, err := a.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := a.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -165,9 +186,13 @@ func (a *AuthorModel) GetAuthor(id int64) (*Author, error) {
 
 	query := `SELECT id, CONCAT(first_name, ' ', last_name) as author_name, first_name, last_name, description, created_at, updated_at FROM cg_authors WHERE id = ?`
 
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
 	var author Author
 
-	err := a.DB.QueryRow(query, id).Scan(&author.AuthorID, &author.AuthorName, &author.FirstName, &author.LastName, &author.Description, &author.CreatedAt, &author.UpdatedAt)
+	err := a.DB.QueryRowContext(ctx, query, id).Scan(&author.AuthorID, &author.AuthorName, &author.FirstName, &author.LastName, &author.Description, &author.CreatedAt, &author.UpdatedAt)
 
 	if err != nil {
 		switch {
@@ -184,7 +209,11 @@ func (a *AuthorModel) GetAuthor(id int64) (*Author, error) {
 func (a *AuthorModel) UpdateAuthor(author *Author) error {
 	query := `UPDATE cg_authors SET first_name = ?, last_name = ?, description = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?`
 
-	_, err := a.DB.Exec(query, author.FirstName, author.LastName, author.Description, author.AuthorID)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	_, err := a.DB.ExecContext(ctx, query, author.FirstName, author.LastName, author.Description, author.AuthorID)
 	if err != nil {
 		return err
 	}
@@ -198,7 +227,11 @@ func (a *AuthorModel) GetAuthorNumberOfBooks(id int64) (int, error) {
 
 	var bookAuthorNumber int
 
-	err := a.DB.QueryRow(query, id).Scan(&bookAuthorNumber)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := a.DB.QueryRowContext(ctx, query, id).Scan(&bookAuthorNumber)
 	if err != nil {
 		return 0, err
 	}
@@ -214,7 +247,11 @@ func (a *AuthorModel) DeleteBookAuthors(id int64) error {
 
 	query := `DELETE FROM cg_book_authors WHERE book_id = ?`
 
-	result, err := a.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := a.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}

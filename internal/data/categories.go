@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -41,7 +42,11 @@ func (c *CategoryModel) Insert(category *Category) (int, error) {
 
 	args := []any{category.Name}
 
-	result, err := c.DB.Exec(query, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := c.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, nil
 	}
@@ -72,7 +77,11 @@ func (c *CategoryModel) InsertBookCategories(bc []BookCategory) (int, error) {
 	}
 	query = query[:len(query)-1]
 
-	result, err := c.DB.Exec(query, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := c.DB.ExecContext(ctx, query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -88,7 +97,11 @@ func (c *CategoryModel) InsertBookCategories(bc []BookCategory) (int, error) {
 func (c *CategoryModel) GetCategories() ([]*Category, error) {
 	query := `SELECT * FROM cg_categories`
 
-	rows, err := c.DB.Query(query)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	rows, err := c.DB.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +137,11 @@ func (c *CategoryModel) GetCategory(id int64) (*Category, error) {
 
 	var category Category
 
-	err := c.DB.QueryRow(query, id).Scan(&category.ID, &category.Name, &category.CreatedAt, &category.UpdatedAt)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(&category.ID, &category.Name, &category.CreatedAt, &category.UpdatedAt)
 
 	if err != nil {
 		switch {
@@ -146,7 +163,11 @@ func (c *CategoryModel) GetBooksInCategory(id int64) (int, error) {
 
 	var bookCategoryNumber int
 
-	err := c.DB.QueryRow(query, id).Scan(&bookCategoryNumber)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	err := c.DB.QueryRowContext(ctx, query, id).Scan(&bookCategoryNumber)
 	if err != nil {
 		return 0, err
 	}
@@ -160,7 +181,11 @@ func (c *CategoryModel) GetBookCategories(id int64) ([]*Category, error) {
 						LEFT JOIN cg_book_categories bc ON bc.category_id = c.id
 						WHERE bc.book_id = ?`
 
-	results, err := c.DB.Query(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	results, err := c.DB.QueryContext(ctx, query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -186,7 +211,11 @@ func (c *CategoryModel) GetBookCategories(id int64) ([]*Category, error) {
 func (c *CategoryModel) UpdateCategory(category *Category) error {
 	query := `UPDATE cg_categories SET name = ?, updated_at = UTC_TIMESTAMP() WHERE id = ?`
 
-	_, err := c.DB.Exec(query, category.Name, category.ID)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	_, err := c.DB.ExecContext(ctx, query, category.Name, category.ID)
 	if err != nil {
 		return err
 	}
@@ -200,7 +229,11 @@ func (c *CategoryModel) DeleteCategory(id int64) error {
 
 	query := `DELETE FROM cg_categories WHERE id = ?`
 
-	result, err := c.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := c.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
@@ -224,7 +257,11 @@ func (c *CategoryModel) DeleteBookCategories(id int64) error {
 
 	query := `DELETE FROM cg_book_categories WHERE book_id = ?`
 
-	result, err := c.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	result, err := c.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
