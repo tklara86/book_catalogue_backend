@@ -330,3 +330,42 @@ func (app *application) updateBookHandler(w http.ResponseWriter, r *http.Request
 	}
 
 }
+
+func (app *application) listBooksHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title      string
+		Authors    []string
+		Categories []string
+		Status     int
+		data.Filters
+	}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	input.Title = app.readStrings(qs, "title", "")
+	input.Authors = app.readCSV(qs, "authors", []string{})
+	input.Categories = app.readCSV(qs, "categories", []string{})
+
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+	input.Filters.Sort = app.readStrings(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "title", "-id", "-title"}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	books, err := app.models.Book.GetFilteredBooks(input.Title, input.Authors, input.Categories, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = app.writeToJSON(w, http.StatusOK, envelope{"books": books}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+}

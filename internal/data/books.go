@@ -95,6 +95,44 @@ func (b *BookModel) GetBooks() ([]*Book, error) {
 		books = append(books, bk)
 	}
 
+	if err = results.Err(); err != nil {
+		return nil, err
+	}
+
+	return books, nil
+}
+
+func (b *BookModel) GetFilteredBooks(title string, authors []string, categories []string, filters Filters) ([]*Book, error) {
+	query := `SELECT * FROM cg_books`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+
+	defer cancel()
+
+	results, err := b.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer results.Close()
+
+	books := []*Book{}
+
+	for results.Next() {
+		bk := &Book{}
+
+		err := results.Scan(&bk.ID, &bk.Title, &bk.StatusName, &bk.StatusID, &bk.CreatedAt, &bk.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		books = append(books, bk)
+	}
+
+	if err = results.Err(); err != nil {
+		return nil, err
+	}
+
 	return books, nil
 }
 
