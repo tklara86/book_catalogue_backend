@@ -145,7 +145,9 @@ func (app *application) getBookHandler(w http.ResponseWriter, r *http.Request) {
 // getBooksHandler get all books
 func (app *application) getBooksHandler(w http.ResponseWriter, r *http.Request) {
 
-	books, err := app.models.Book.GetBooks()
+	qs := r.URL.Query()
+
+	books, err := app.models.Book.GetBooks(qs)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return

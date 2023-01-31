@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/tklara86/book_catalogue/internal/validator"
@@ -68,8 +70,30 @@ func (b *BookModel) Insert(book *Book) (int, error) {
 	return int(id), nil
 }
 
-func (b *BookModel) GetBooks() ([]*Book, error) {
-	query := `SELECT * FROM cg_books`
+func (b *BookModel) GetBooks(qs url.Values) ([]*Book, error) {
+	query := `SELECT DISTINCT(b.id), b.title, b.status, b.status_id, b.created_at, b.updated_at FROM cg_books b`
+
+	authors := strings.Split(qs.Get("authors"), ",")
+	categories := strings.Split(qs.Get("categories"), ",")
+
+	var authorIds []string
+	var categoryIds []string
+
+	if len(authors) > 0 {
+		query += ` LEFT JOIN cg_book_authors ba ON ba.book_id = b.id`
+	}
+	if len(categories) > 0 {
+		query += ` LEFT JOIN cg_book_categories bc ON bc.book_id = b.id`
+	}
+
+	if len(authors) > 0 {
+		authorIds = append(authorIds, authors...)
+		query += ` WHERE ba.author_id IN ` + `(` + strings.Join(authorIds, ",") + `)`
+	}
+	if len(categories) > 0 {
+		categoryIds = append(categoryIds, categories...)
+		query += ` AND bc.category_id IN ` + `(` + strings.Join(categoryIds, ",") + `)`
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
