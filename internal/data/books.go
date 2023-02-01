@@ -79,18 +79,18 @@ func (b *BookModel) GetBooks(qs url.Values) ([]*Book, error) {
 	var authorIds []string
 	var categoryIds []string
 
-	if len(authors) > 0 {
+	if qs.Get("authors") != "" {
 		query += ` LEFT JOIN cg_book_authors ba ON ba.book_id = b.id`
 	}
-	if len(categories) > 0 {
+	if qs.Get("categories") != "" {
 		query += ` LEFT JOIN cg_book_categories bc ON bc.book_id = b.id`
 	}
 
-	if len(authors) > 0 {
+	if qs.Get("authors") != "" {
 		authorIds = append(authorIds, authors...)
 		query += ` WHERE ba.author_id IN ` + `(` + strings.Join(authorIds, ",") + `)`
 	}
-	if len(categories) > 0 {
+	if qs.Get("categories") != "" {
 		categoryIds = append(categoryIds, categories...)
 		query += ` AND bc.category_id IN ` + `(` + strings.Join(categoryIds, ",") + `)`
 	}
