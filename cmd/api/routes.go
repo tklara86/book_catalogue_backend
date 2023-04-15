@@ -38,5 +38,5 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodDelete, "/v1/categories", app.deleteCategoryHandler)
 	router.HandlerFunc(http.MethodPatch, "/v1/categories/:id", app.updateCategoryHandler)
 
-	return app.enableCORS(router)
+	return app.recoverPanic(app.rateLimit(app.enableCORS(router)))
 }

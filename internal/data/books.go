@@ -95,6 +95,8 @@ func (b *BookModel) GetBooks(qs url.Values) ([]*Book, error) {
 		query += ` AND bc.category_id IN ` + `(` + strings.Join(categoryIds, ",") + `)`
 	}
 
+	query += " ORDER BY b.title ASC"
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
 	defer cancel()

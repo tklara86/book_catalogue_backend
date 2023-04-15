@@ -37,7 +37,7 @@ func (app *application) writeToJSON(w http.ResponseWriter, status int, data enve
 		w.Header()[key] = value
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Access-Control-Allow-Origin", "http://127.0.0.1:5173")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	w.WriteHeader(status)
