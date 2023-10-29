@@ -20,11 +20,17 @@ func (app *application) createBookHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	var input struct {
-		Title      string `json:"title"`
-		Status     int    `json:"status"`
-		StatusID   int    `json:"status_id"`
-		Authors    []int  `json:"authors"`
-		Categories []int  `json:"categories"`
+		Title         string `json:"title"`
+		Status        int    `json:"status"`
+		StatusID      int    `json:"status_id"`
+		Subtitle      string `json:"subtitle"`
+		Description   string `json:"description"`
+		Image         string `json:"image"`
+		ISBN          string `json:"isbn"`
+		PageCount     int    `json:"page_count"`
+		PublishedDate string `json:"published_date"`
+		Authors       []int  `json:"authors"`
+		Categories    []int  `json:"categories"`
 	}
 
 	err = app.readJSON(w, r, &input)
@@ -34,11 +40,17 @@ func (app *application) createBookHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	book := &data.Book{
-		Title:      input.Title,
-		Status:     input.Status,
-		StatusID:   input.StatusID,
-		Authors:    input.Authors,
-		Categories: input.Categories,
+		Title:         input.Title,
+		Subtitle:      input.Subtitle,
+		Description:   input.Description,
+		Image:         input.Image,
+		ISBN:          input.ISBN,
+		PageCount:     input.PageCount,
+		PublishedDate: input.PublishedDate,
+		Status:        input.Status,
+		StatusID:      input.StatusID,
+		Authors:       input.Authors,
+		Categories:    input.Categories,
 	}
 
 	v := validator.New()

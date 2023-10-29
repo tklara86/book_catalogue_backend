@@ -14,6 +14,12 @@ import (
 type Book struct {
 	ID             int64       `json:"id"`
 	Title          string      `json:"title"`
+	Subtitle       string      `json:"subtitle"`
+	Description    string      `json:"description"`
+	Image          string      `json:"image"`
+	ISBN           string      `json:"isbn"`
+	PageCount      int         `json:"page_count"`
+	PublishedDate  string      `json:"published_date"`
 	Status         int         `json:"status,omitempty"`
 	StatusName     string      `json:"status_name"`
 	StatusID       int         `json:"status_id"`
@@ -49,9 +55,9 @@ type BookModel struct {
 // Insert new book and returns new book id
 func (b *BookModel) Insert(book *Book) (int, error) {
 	query := `
-    INSERT INTO cg_books(title,status,status_id,created_at,updated_at) VALUES (?,?,?, UTC_TIMESTAMP(), UTC_TIMESTAMP())
+    INSERT INTO cg_books(title,subtitle,description,page_count,image,published_date,isbn,status,status_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?, UTC_TIMESTAMP(), UTC_TIMESTAMP())
   `
-	args := []any{book.Title, book.Status, book.StatusID}
+	args := []any{book.Title, book.Subtitle, book.Description, book.PageCount, book.Image, book.PublishedDate, book.ISBN, book.Status, book.StatusID}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 
@@ -71,7 +77,7 @@ func (b *BookModel) Insert(book *Book) (int, error) {
 }
 
 func (b *BookModel) GetBooks(qs url.Values) ([]*Book, error) {
-	query := `SELECT DISTINCT(b.id), b.title, b.status, b.status_id, b.created_at, b.updated_at FROM cg_books b`
+	query := `SELECT DISTINCT(b.id), b.title, b.status, b.subtitle, b.description, b.page_count, b.image, b.published_date, b.isbn, b.status_id, b.created_at, b.updated_at FROM cg_books b`
 
 	authors := strings.Split(qs.Get("authors"), ",")
 	categories := strings.Split(qs.Get("categories"), ",")
@@ -113,7 +119,7 @@ func (b *BookModel) GetBooks(qs url.Values) ([]*Book, error) {
 	for results.Next() {
 		bk := &Book{}
 
-		err := results.Scan(&bk.ID, &bk.Title, &bk.StatusName, &bk.StatusID, &bk.CreatedAt, &bk.UpdatedAt)
+		err := results.Scan(&bk.ID, &bk.Title, &bk.StatusName, &bk.Subtitle, &bk.Description, &bk.PageCount, &bk.Image, &bk.PublishedDate, &bk.ISBN, &bk.StatusID, &bk.CreatedAt, &bk.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
