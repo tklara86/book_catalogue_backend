@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/tklara86/book_catalogue/internal/data"
 	"github.com/tklara86/book_catalogue/internal/validator"
@@ -70,6 +71,10 @@ func (app *application) getCategoriesHandler(w http.ResponseWriter, r *http.Requ
 
 		cat.BooksInCategory = bookCategories
 	}
+
+	sort.Slice(categories, func(i, j int) bool {
+		return categories[i].BooksInCategory > categories[j].BooksInCategory
+	})
 
 	err = app.writeToJSON(w, http.StatusOK, envelope{"results": categories}, nil)
 	if err != nil {

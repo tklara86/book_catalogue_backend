@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sort"
 
 	"github.com/tklara86/book_catalogue/internal/data"
 )
@@ -89,6 +90,10 @@ func (app *application) getAuthorsHandler(w http.ResponseWriter, r *http.Request
 		app.notFoundResponse(w, r)
 		return
 	}
+
+	sort.Slice(authors, func(i, j int) bool {
+		return authors[i].AuthorBooks > authors[j].AuthorBooks
+	})
 
 	err = app.writeToJSON(w, http.StatusOK, envelope{"results": authors}, nil)
 	if err != nil {
